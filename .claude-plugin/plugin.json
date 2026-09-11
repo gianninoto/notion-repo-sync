@@ -1,0 +1,9 @@
+{
+  "name": "notion-repo-sync",
+  "displayName": "Notion repo sync",
+  "version": "0.1.0",
+  "description": "Mirror a repo's markdown docs into Notion pages and databases: diff-driven, replace-not-merge, read back after every write. The skill sets it up in a project, writes its config, and wires CI.",
+  "author": { "name": "Justin Gianninoto" },
+  "repository": "https://github.com/gianninoto/notion-repo-sync",
+  "license": "MIT"
+}

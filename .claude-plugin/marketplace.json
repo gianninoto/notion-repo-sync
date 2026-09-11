@@ -1,0 +1,11 @@
+{
+  "name": "notion-repo-sync",
+  "owner": { "name": "Justin Gianninoto" },
+  "plugins": [
+    {
+      "name": "notion-repo-sync",
+      "source": "./",
+      "description": "Mirror a repo's markdown docs into Notion pages and databases, diff-driven and read back after every write."
+    }
+  ]
+}
