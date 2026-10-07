@@ -25,6 +25,7 @@
  *   - sync only from the configured branch
  *   - a marker page is never written without its marker — abort, never guess
  *   - state hashes advance only for pages that succeeded
+ *   - a --force run off the configured branch writes pages but records no state
  *   - read-back after every structural write: count and probe, or fail
  */
 import fs from 'node:fs';
@@ -34,7 +35,10 @@ import {
 } from './lib/api.mjs';
 import { renderMarkdown, callout, plainText, probesOf } from './lib/render.mjs';
 import { writeBlocks, readBack } from './lib/pages.mjs';
-import { statePathFor, loadState, saveState, planPages, blobContent, git } from './lib/state.mjs';
+import {
+  statePathFor, loadState, saveState, planPages, blobContent, git, shouldRecordState,
+} from './lib/state.mjs';
+import { isStamp } from './lib/stamp.mjs';
 import { syncDatabase } from './lib/database.mjs';
 import {
   DEFAULT_CONFIG_FILE, loadConfig, makeContext, currentHashes, assemblePages,
@@ -253,6 +257,16 @@ async function syncPages(ids) {
         const rendered = renderMarkdown(addition, renderOpts);
         topLevelRendered = rendered.length;
         appended = await writeBlocks(pageId, rendered, tok, { afterBlockId: after });
+        /* The page's first block is its stamp (written on its last replace); an
+         * append moves the time on in place. A page without one gets it at its
+         * next replace. */
+        const first = children[0];
+        if (page.stamp && first?.type === 'paragraph' && isStamp(plainText(first), config.stamp.prefix)) {
+          const [fresh] = renderMarkdown(page.stamp, renderOpts);
+          await notionFetch(`/blocks/${first.id}`, {
+            method: 'PATCH', token: tok, body: { paragraph: { rich_text: fresh.paragraph.rich_text } },
+          });
+        }
       } else {
         await deleteChildrenAfter(pageId, tok);
         const rendered = renderMarkdown(page.md, renderOpts);
@@ -331,7 +345,10 @@ const run = async () => {
 
   const failed = results.filter(r => !r.ok);
   const written = succeeded.filter(r => !r.skipped);
-  saveState(
+  const record = shouldRecordState({ branch, configBranch: config.branch, forced: flag('--force') });
+  if (!record) {
+    log(`  state not recorded — forced run off ${config.branch}; CI will re-sync these pages from ${config.branch}`);
+  } else saveState(
     statePath,
     {
       mode,
