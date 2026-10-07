@@ -301,8 +301,19 @@ async function runDatabase(db, ids) {
     log(`  – ${db.key}: no data source in the id file, skipped`);
     return true;
   }
+  /* A dry run reads the board — a plan for a database is a comparison with
+   * what is on it — and writes nothing. Without a token it says so and skips,
+   * rather than sending a request that can only be refused. */
+  let tok;
   try {
-    const summary = await syncDatabase(db, dataSourceId, dryRun ? null : token(), { dryRun, ctx });
+    tok = token();
+  } catch {
+    if (!dryRun) throw new Error(`${config.tokenEnv} not found`);
+    log(`  – ${db.key} (dry): no token, so the board was not read`);
+    return true;
+  }
+  try {
+    const summary = await syncDatabase(db, dataSourceId, tok, { dryRun, ctx });
     log(summary.line);
     return summary.ok;
   } catch (err) {
