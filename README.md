@@ -4,7 +4,8 @@ Mirror a repo's markdown documents into Notion pages and databases. One way,
 repo → Notion, run by CI on every push. Diff-driven, replace-not-merge, read
 back after every write.
 
-It is both an **npm package** (the engine and a CLI, so it runs in your CI) and
+It is an **npm package** (the engine and a CLI), a **GitHub Action** (`uses:
+gianninoto/notion-repo-sync@<commit-sha>` — the whole CI half in one step), and
 a **Claude Code plugin** (a skill that sets it up in a project, writes the
 config, and knows what Notion's API refuses).
 
@@ -55,8 +56,10 @@ Or, to try the skill from a local checkout: `claude --plugin-dir ./notion-repo-s
    npx notion-repo-sync --check            # ✓ in step with the board
    ```
 5. Copy `skills/notion-sync/templates/notion-sync.yml` to
-   `.github/workflows/`, add the `NOTION_TOKEN` secret, commit the id and state
-   files. Session end is `git push`.
+   `.github/workflows/`, pin the action to a commit, add the `NOTION_TOKEN`
+   secret, commit the id and state files. The action runs `full` every Friday
+   and replays the state file onto the branch tip, three attempts, never a
+   rebase. Session end is `git push`.
 
 The skill walks through all of this, including proposing the page table from
 your docs.
@@ -143,7 +146,7 @@ should report `replace`.
 ## Development
 
 ```bash
-npm test                 # 43 assertions, node:test, no network
+npm test                 # 65 assertions, node:test, no network (some use git in a temp folder)
 npm run fixture:dry      # plan the fixture project
 ```
 

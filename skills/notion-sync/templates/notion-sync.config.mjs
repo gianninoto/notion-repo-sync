@@ -15,8 +15,13 @@ export default {
   ids: 'docs/.notion-ids.json',
 
   /* The branch the docs live on. The sync refuses to run from any other
-   * (--force overrides). null disables the guard. */
+   * (--force overrides, but a forced run off it records no state). null
+   * disables the guard. */
   branch: 'main',
+
+  /* Every page opens with when its source files last changed — the newest
+   * commit, never the run time. Recommended. `true` uses UTC. */
+  stamp: { timeZone: 'America/Los_Angeles', label: 'PT' },
 
   /* The page whose id is seeded by hand (--init --hub <url>) and whose child
    * pages/databases everything else is resolved from. Defaults to the marker
@@ -122,6 +127,9 @@ export default {
     //   onCreateOnly: { Status: 'New' },
     //   when: 'command',
     //   rows: async () => (await fetchReports()).map(r => ({ id: r.id, properties: { title: r.summary, Kind: r.kind }, body: r.text.split('\n') })),
+    //   // A live read must prove it reached real data before anything is written:
+    //   // a known canary row present, every expected group non-empty — or the run throws.
+    //   calibrate: { canary: r => r.id === KNOWN_REPORT_ID, expect: { thisMonth: r => r.at >= MONTH_START } },
     // },
   ],
 };
