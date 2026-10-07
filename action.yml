@@ -1,0 +1,56 @@
+name: notion-repo-sync
+description: Mirror a repo's markdown docs into Notion on every push — diff-driven, replace-not-merge, read back after every write — and commit the run's state onto the branch tip.
+branding:
+  icon: book-open
+  color: gray-dark
+
+inputs:
+  token:
+    description: The Notion integration token. Pass a secret (secrets.NOTION_TOKEN); never a literal.
+    required: true
+  mode:
+    description: sync | full | <database-key>. Empty means sync, or full on a scheduled run.
+    required: false
+    default: ''
+  config:
+    description: Path to the project's config file.
+    required: false
+    default: notion-sync.config.mjs
+  state-file:
+    description: The state file the config writes (its `state`, or the id file's name with .state.json).
+    required: false
+    default: docs/.notion-ids.state.json
+  node-version:
+    description: Node version for the engine (it needs 22.18 or later).
+    required: false
+    default: '24'
+
+runs:
+  using: composite
+  steps:
+    # Append decisions retrieve old content by blob hash; a shallow clone
+    # would make every append a full replace.
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install the engine
+      shell: bash
+      run: npm ci --omit=dev --no-audit --no-fund --prefix "$GITHUB_ACTION_PATH"
+
+    # A scheduled run is `full`: no hash moves on a quiet week, and a dated
+    # page (a digest's "as of", "N days ago") must still move.
+    - name: Sync
+      shell: bash
+      env:
+        NOTION_TOKEN: ${{ inputs.token }}
+        MODE: ${{ github.event_name == 'schedule' && 'full' || inputs.mode || 'sync' }}
+      run: node "$GITHUB_ACTION_PATH/cli.mjs" "$MODE" --config "${{ inputs.config }}"
+
+    - name: Commit state file
+      shell: bash
+      run: bash "$GITHUB_ACTION_PATH/scripts/commit-state.sh" "${{ inputs.state-file }}" "${{ github.ref_name }}"
