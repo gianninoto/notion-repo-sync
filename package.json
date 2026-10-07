@@ -25,7 +25,8 @@
   "scripts": {
     "test": "node --test 'tests/*.test.mjs'",
     "fixture:dry": "node cli.mjs --config fixtures/sample-project/notion-sync.config.mjs --dry-run",
-    "fixture:check": "node cli.mjs --config fixtures/sample-project/notion-sync.config.mjs --check"
+    "fixture:check": "node cli.mjs --config fixtures/sample-project/notion-sync.config.mjs --check",
+    "fixture:live": "node scripts/fixture-live.mjs"
   },
   "dependencies": {
     "@tryfabric/martian": "^1.2.4"
