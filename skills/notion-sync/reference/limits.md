@@ -40,6 +40,27 @@ developers.notion.com and live runs; each is a line of `lib/api.mjs` or
   probe strips `|` to match. Both were observed wrong once (a same-day false
   negative each way).
 
+## Observed 2026-10-10 (claude-ops' first sync; Manifest's session, asked read-only)
+
+- CONFIRMED · a soft wrap in the source (a newline inside a paragraph) reached
+  Notion as a line break mid-sentence. The renderer now joins them in every
+  block but code (`joinSoftWraps`, tests in `render.test.mjs`); a full run
+  re-renders pages written before it.
+- PROVISIONAL · a markdown hard break (two trailing spaces, or a backslash)
+  renders as two text runs with no break between them — the words run
+  together. Seen in a local render only, not on a page.
+- CONFIRMED · a GFM table row whose cell holds a bare `|` (even inside
+  backticks) is wider than its table, and Notion refuses the whole page:
+  "Number of cells in table row must match the table width". `\|` renders
+  correctly. A project's docs check should fail ragged tables.
+- PROVISIONAL (Manifest, log 2026-09-12, one run) · a POST under a trashed
+  parent is refused: "Can't edit block that is archived".
+- PROVISIONAL (Manifest, INFERRED there) · a select value with no matching
+  option creates a new option, so an unmapped raw id becomes a board option.
+- PROVISIONAL (Manifest) · the stamp regex takes the first `gen:` match in the
+  stamp column, so prose in that column after the key is ignored, not
+  rejected. Undocumented until now.
+
 ## Historical: the Notion MCP's markdown converter
 
 These were measured 2026-08-15 to 2026-08-17 against the **MCP** path, which

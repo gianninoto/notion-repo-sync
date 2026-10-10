@@ -120,7 +120,9 @@ elsewhere in the file does not re-render the page.
 
 **Databases.** `mode: 'reconcile'` with `desired(ctx) → [{ key, properties,
 body }]`, `stampProperty` (default `Key`), `stampPrefix` (default `gen:`),
-`managed` (regex of key families the engine may trash), `trashStale`. `mode:
+`managed` (regex of key families the engine may trash), `trashStale`,
+`updateExisting` (default on: an existing row's generated columns are
+rewritten when they drift from the repo; `false` sets them once). `mode:
 'upsert'` with `rows(ctx) → [{ id, properties, body }]` and `idProperty`.
 Both: `forbidden` (columns the engine must never write; a provider naming one
 throws at plan time), `onCreateOnly` (values written once at birth), `when:

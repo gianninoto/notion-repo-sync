@@ -176,3 +176,23 @@ test('composer helpers emit legal blocks', () => {
   assert.equal(c.type, 'callout');
   assert.equal(c.callout.icon.emoji, '⚙️');
 });
+
+/* Source markdown is hard-wrapped; GitHub joins a paragraph's lines with a
+ * space, Notion showed every wrap as a line break (claude-ops hub and Manifest
+ * HQ, 2026-10-10). Code keeps its newlines. */
+test('a soft-wrapped paragraph renders as one line, as GitHub shows it', () => {
+  const [b] = renderMarkdown('one line\nnext line');
+  assert.equal(b.paragraph.rich_text.map(t => t.text.content).join(''), 'one line next line');
+});
+
+test('soft wraps join in list items, quotes and table cells too', () => {
+  const [li] = renderMarkdown('- item one\n  continues');
+  assert.equal(li.bulleted_list_item.rich_text.map(t => t.text.content).join(''), 'item one continues');
+  const [q] = renderMarkdown('> quoted\n> on two lines');
+  assert.ok(!JSON.stringify(q).includes('\\n'), JSON.stringify(q));
+});
+
+test('a code block keeps its newlines', () => {
+  const [c] = renderMarkdown('```\na\nb\n```');
+  assert.equal(c.code.rich_text.map(t => t.text.content).join(''), 'a\nb');
+});

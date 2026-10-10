@@ -85,6 +85,17 @@ before being trusted.
   states a pending call as fact is worse than one a day stale, because it is
   read instead of asked about.
 
+## Boards drift when "generated" means "generated once" (2026-10-10)
+
+Reconcile created and trashed rows but never rewrote an existing one, so a
+card's Stage and title were set at creation and frozen. Manifest's Roadmap was
+documented as generated ("you do not drag them") and was 12 of 32 cards stale
+(per Manifest's session, live query 2026-10-10). Now reconcile rewrites every
+generated column that drifted, never a `forbidden` one, never the stamp or an
+`onCreateOnly` value; `updateExisting: false` restores set-once. **A board
+should say who owns each column after creation — generated every run, or a
+person's — and the engine should make that true.**
+
 ## What the old agent-driven skill cost, for scale
 
 Seventeen measured runs: floor 7 minutes / 178k tokens to add zero rows;
