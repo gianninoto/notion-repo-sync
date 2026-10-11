@@ -16,6 +16,8 @@ on:
     paths:
       - 'docs/**'
       - 'CHANGELOG.md'
+      - 'package.json'            # a re-pin should run the new engine at once
+      - '.github/workflows/notion-sync.yml'
   schedule:
     - cron: '0 14 * * 5'        # Friday 14:00 UTC, always `full`
   workflow_dispatch:

@@ -96,6 +96,18 @@ generated column that drifted, never a `forbidden` one, never the stamp or an
 should say who owns each column after creation — generated every run, or a
 person's — and the engine should make that true.**
 
+## Two ways a sync silently does not run (Manifest, 2026-10-11)
+
+- PROVISIONAL (Manifest, GitHub run history) · a commit that only moves the
+  pin — `package.json` and the workflow file — triggers no run when the
+  workflow's `paths:` filter lists only docs. The new engine first runs on
+  the next docs push. Put `package.json` and the workflow file in `paths:`
+  (the template now does).
+- PROVISIONAL (Manifest, INFERRED there) · a commit whose message spells out
+  the CI-skip marker — even to describe it — is skipped by Actions (and by
+  Cloudflare), so its doc changes are not synced until a later push. Never
+  write the marker literally in a commit message unless the skip is meant.
+
 ## What the old agent-driven skill cost, for scale
 
 Seventeen measured runs: floor 7 minutes / 178k tokens to add zero rows;
